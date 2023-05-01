@@ -14,7 +14,8 @@ const read = async (way) => {
     const fileData = await fs.readFile(way, "utf-8");
     return JSON.parse(fileData);
   } catch (err) {
-    throw new Error("read content >>", err);
+    console.log("Error read content >>", err);
+    return null
   }
 };
 
@@ -24,28 +25,41 @@ const write = async (way, content) => {
     const fileData = await fs.writeFile(way, contentJson, "utf-8");
     return content;
   } catch (err) {
-    throw new Error("write content >>", err);
+    console.log("Error write content >>", err);
+    return null
   }
 };
 // ******************* */
 
 // TODO: повертаю весь список контактів (запит за масивом)
-const getContacts = async () => {
-  const data = await read(contactsPath);
-  if (!Array.isArray(data)) {
-    throw new Error("data is not an array");
-  }
-  return data
+const listContacts = async () => {
+  const data = await fs.readFile(contactsPath, "utf-8");
+  return JSON.parse(data);
 }
 
 // TODO: повертаю контакт за id (запит за масивом)
-const getContactById = async (contactId) => {
-  const data = await read(contactsPath);
-  if (!Array.isArray(data)) {
-    throw new Error("data is not an array");
-  }
+const getById = async (contactId) => {
+  const data = await listContacts();
   const dataId = data.find((el) => el.id === contactId);
-  return dataId;
+  return dataId || null;
+}
+
+// TODO: додаю контакт
+const addContact = async (newData) => {
+  const newContact = {
+    id: crypto.randomBytes(10).toString("hex"),
+    ...newData
+  };
+
+  const contactList = await listContacts();
+  contactList.push(newContact);
+
+  await fs.writeFile(contactsPath, JSON.stringify(contactList), "utf-8"); // fs.writeFile(contactsPath, JSON.stringify(contactList, null, 2)); // Що за null, 2)
+  return newContact;
+}
+
+const updateContact = async (contactId, body) => {
+
 }
 
 // TODO: видаляю контакт за id (запит за масивом)
@@ -59,33 +73,10 @@ const removeContact = async (contactId) => {
   return returnData;
 }
 
-// TODO: додаю контакт
-// const addContact = async (body) => {}
-const addContact = async (name, email, phone) => {
-  const data = await read(contactsPath);
-  if (!Array.isArray(data)) {
-    throw new Error("data is not an array");
-  }
-
-  const randomString = crypto.randomBytes(10).toString("hex");
-  const newContact = {
-    id: randomString,
-    name: name,
-    email: email,
-    phone: phone,
-  };
-
-  const newData = [...data, newContact];
-  const returnData = await write(contactsPath, newData);
-  return returnData;
-}
-
-const updateContact = async (contactId, body) => {}
-
 module.exports = {
-  getContacts,
-  getContactById,
-  removeContact,
+  listContacts,
+  getById,
   addContact,
   updateContact,
+  removeContact,
 }
