@@ -13,7 +13,7 @@ const listContacts = async () => {
 };
 
 // TODO: повертаю контакт за id (запит за масивом)
-const getById = async (contactId) => {
+const contactById = async (contactId) => {
   const data = await listContacts();
   const dataId = data.find((el) => el.id === contactId);
   return dataId || null;
@@ -78,7 +78,7 @@ const removeContact = async (contactId) => {
 
 module.exports = {
   listContacts,
-  getById,
+  contactById,
   addContact,
   updateContact,
   removeContact,
