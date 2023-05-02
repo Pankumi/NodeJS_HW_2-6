@@ -37,7 +37,7 @@ router.get("/", async (req, res, next) => {
 router.get("/:id", async (req, res, next) => {
   try {
     // 1
-    const result = await getById(req.params.id); // info: getById повертається null якщо id не знайдений 
+    const result = await getById(req.params.id); // info: getById повертається null якщо id не знайдений
     if (result === null) {
       throw HttpError(404, "Not found");
     }
@@ -50,10 +50,10 @@ router.get("/:id", async (req, res, next) => {
 
 // 1-перевіряю поля на валідність, 2-додаю нов. об'єкт до масиву, 3-повертаю нов. об'ект
 router.post("/", async (req, res, next) => {
-  try{
+  try {
     // 1
-    const {error} = addSchema.validate(req.body);
-    if(error){
+    const { error } = addSchema.validate(req.body);
+    if (error) {
       throw HttpError(400, "missing required name field");
     }
     // 2
@@ -61,7 +61,7 @@ router.post("/", async (req, res, next) => {
     // 3
     res.status(201).json(result);
   } catch (error) {
-    next(error)
+    next(error);
   }
 });
 
@@ -70,19 +70,19 @@ router.post("/", async (req, res, next) => {
 router.put("/:id", async (req, res, next) => {
   try {
     // 1
-    const {error} = changeSchema.validate(req.body);
+    const { error } = changeSchema.validate(req.body);
     if (error) {
-      throw HttpError(400, "missing fields")
+      throw HttpError(400, "missing fields");
     }
     // 2
-    const result = await updateContact(req.params.id, req.body); // info: updateContact повертається null якщо id не знайдений 
-    if(result === null){
+    const result = await updateContact(req.params.id, req.body); // info: updateContact повертається null якщо id не знайдений
+    if (result === null) {
       throw HttpError(404, "Not found");
     }
     // 3
     res.status(200).json(result);
   } catch (error) {
-    next(error)
+    next(error);
   }
 });
 
@@ -90,15 +90,15 @@ router.put("/:id", async (req, res, next) => {
 router.delete("/:id", async (req, res, next) => {
   try {
     // 1
-    const result = await removeContact(req.params.id); // info: removeContact повертається null якщо id не знайдений 
-    if(result === null){
-      throw HttpError(404, "not found")
+    const result = await removeContact(req.params.id); // info: removeContact повертається null якщо id не знайдений
+    if (result === null) {
+      throw HttpError(404, "not found");
     }
     // 2
     // res.status(204); // статус 204 відправляється без тіла тому і вказувати його не потрібно.
-    res.status(200).json({"message": "contact deleted"})
+    res.status(200).json({ message: "contact deleted" });
   } catch (error) {
-    next(error)
+    next(error);
   }
 });
 
