@@ -7,7 +7,7 @@ const {
   updateContact,
   removeContact,
 } = require("../models/contacts");
-const { HttpError } = require("../helpers/index");
+const { HttpError, ctrlWrapper } = require("../helpers/index");
 
 // шаблон полів в body запиту.
 const addSchema = Joi.object({
@@ -22,32 +22,23 @@ const addSchema = Joi.object({
     phone: Joi.string(),
   });
 
-  const getAll = async (req, res, next) => {
-    try {
+  const getAll = async (req, res) => {
       res.status(200).json(await listContacts());
-    } catch (error) {
-      next(error); // next() - продовжити пошук підходякого обробника далі, next(error) - знайти обробник помилок
-    }
   }
 
   // 1-знаходжу об'єкт з зазначеним id, 2-повертаю
-  const getById = async (req, res, next) => {
-    try {
+  const getById = async (req, res) => {
       // 1
-      const result = await contactById(req.params.id); // info: getById повертається null якщо id не знайдений
+      const result = await contactById(req.params.id); // info: contactById повертається null якщо id не знайдений
       if (result === null) {
         throw HttpError(404, "Not found");
       }
       // 2
       res.json(result);
-    } catch (error) {
-      next(error);
-    }
   };
 
   // 1-перевіряю поля на валідність, 2-додаю нов. об'єкт до масиву, 3-повертаю нов. об'ект
-  const add = async (req, res, next) => {
-    try {
+  const add = async (req, res) => {
       // 1
       const { error } = addSchema.validate(req.body);
       if (error) {
@@ -57,14 +48,10 @@ const addSchema = Joi.object({
       const result = await addContact(req.body);
       // 3
       res.status(201).json(result);
-    } catch (error) {
-      next(error);
-    }
   };
 
 // 1-перевіряю поля на валідність, 2-змінюю данні, 3-повертаю оновлений контакт
-const updateById = async (req, res, next) => {
-    try {
+const updateById = async (req, res) => {
       // 1
       const { error } = changeSchema.validate(req.body);
       if (error) {
@@ -77,14 +64,10 @@ const updateById = async (req, res, next) => {
       }
       // 3
       res.status(200).json(result);
-    } catch (error) {
-      next(error);
-    }
   }
 
 // 1-видаляю об'єкт з зазначеним id, 2-повертаю повідомлення
-const deletedById = async (req, res, next) => {
-    try {
+const deletedById = async (req, res) => {
       // 1
       const result = await removeContact(req.params.id); // info: removeContact повертається null якщо id не знайдений
       if (result === null) {
@@ -93,15 +76,12 @@ const deletedById = async (req, res, next) => {
       // 2
       // res.status(204); // статус 204 відправляється без тіла тому і вказувати його не потрібно.
       res.status(200).json({ message: "contact deleted" });
-    } catch (error) {
-      next(error);
-    }
   }
 
   module.exports = {
-    getAll,
-    getById,
-    add,
-    updateById,
-    deletedById
+    getAll: ctrlWrapper(getAll),
+    getById: ctrlWrapper(getById),
+    add: ctrlWrapper(add),
+    updateById: ctrlWrapper(updateById),
+    deletedById: ctrlWrapper(deletedById)
   }
