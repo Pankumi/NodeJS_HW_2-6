@@ -44,7 +44,7 @@ const updateContact = async (contactId, body) => {
     return null
   }
   // 2
-  data[index] = {id: contactId, ...body};
+  data[index] = {...data[index], ...body};
   // 3
   fs.writeFile(contactsPath, JSON.stringify(data, null, "\t"), "utf-8");
   // 4

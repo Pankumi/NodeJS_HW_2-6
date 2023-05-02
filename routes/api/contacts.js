@@ -19,6 +19,12 @@ const addSchema = Joi.object({
   phone: Joi.string().required(),
 }); // string() - тип, required() - обов'язкове
 
+const changeSchema = Joi.object({
+  name: Joi.string(),
+  email: Joi.string(),
+  phone: Joi.string(),
+});
+
 router.get("/", async (req, res, next) => {
   try {
     res.status(200).json(await listContacts());
@@ -64,7 +70,7 @@ router.post("/", async (req, res, next) => {
 router.put("/:id", async (req, res, next) => {
   try {
     // 1
-    const {error} = addSchema.validate(req.body);
+    const {error} = changeSchema.validate(req.body);
     if (error) {
       throw HttpError(400, "missing fields")
     }
