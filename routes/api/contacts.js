@@ -12,63 +12,88 @@ const { HttpError } = require("../../helpers/index");
 
 const router = express.Router();
 
+// шаблон полів в body запиту.
 const addSchema = Joi.object({
   name: Joi.string().required(),
   email: Joi.string().required(),
   phone: Joi.string().required(),
-}); // шаблон отримуваних полів в тілі POST запиту. string() - тип, required() - обов'язкове
+}); // string() - тип, required() - обов'язкове
 
 router.get("/", async (req, res, next) => {
   try {
-    res.json(await listContacts());
+    res.status(200).json(await listContacts());
   } catch (error) {
     next(error); // next() - продовжити пошук підходякого обробника далі, next(error) - знайти обробник помилок
-    // res.status(500).json({message: "Server error"});
   }
 });
 
+// 1-знаходжу об'єкт з зазначеним id, 2-повертаю
 router.get("/:id", async (req, res, next) => {
   try {
-    const result = await getById(req.params.id);
-    if (!result) {
+    // 1
+    const result = await getById(req.params.id); // info: getById повертається null якщо id не знайдений 
+    if (result === null) {
       throw HttpError(404, "Not found");
     }
+    // 2
     res.json(result);
   } catch (error) {
     next(error);
   }
 });
 
+// 1-перевіряю поля на валідність, 2-додаю нов. об'єкт до масиву, 3-повертаю нов. об'ект
 router.post("/", async (req, res, next) => {
   try{
+    // 1
     const {error} = addSchema.validate(req.body);
     if(error){
-      throw HttpError(400, error.message);
+      throw HttpError(400, "missing required name field");
     }
+    // 2
     const result = await addContact(req.body);
+    // 3
     res.status(201).json(result);
   } catch (error) {
     next(error)
   }
 });
 
+// put - запит змінює об'єкт (шляхом повного перезапису масиву)
+// 1-перевіряю поля на валідність, 2-змінюю данні, 3-повертаю оновлений контакт
 router.put("/:id", async (req, res, next) => {
   try {
-    const {error} = addSchema(req.body);
+    // 1
+    const {error} = addSchema.validate(req.body);
     if (error) {
-      throw HttpError(400, error)
+      throw HttpError(400, "missing fields")
     }
-    const {id} = res.params;
-    const result = await updateContact(id, req.body);
-    res.status(201).json(result);
+    // 2
+    const result = await updateContact(req.params.id, req.body); // info: updateContact повертається null якщо id не знайдений 
+    if(result === null){
+      throw HttpError(404, "Not found");
+    }
+    // 3
+    res.status(200).json(result);
   } catch (error) {
     next(error)
   }
-  res.json({ message: "template message" });
-}); // put запит змінює об'єкт шляхом повного перезапису
+});
 
+// 1-видаляю об'єкт з зазначеним id, 2-повертаю повідомлення
 router.delete("/:id", async (req, res, next) => {
-  res.json({ message: "template message" });
+  try {
+    // 1
+    const result = await removeContact(req.params.id); // info: removeContact повертається null якщо id не знайдений 
+    if(result === null){
+      throw HttpError(404, "not found")
+    }
+    // 2
+    // res.status(204); // статус 204 відправляється без тіла тому і вказувати його не потрібно.
+    res.status(200).json({"message": "contact deleted"})
+  } catch (error) {
+    next(error)
+  }
 });
 
 module.exports = router;

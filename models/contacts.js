@@ -1,5 +1,3 @@
-// console.log('__dirname >>', __dirname); // ********************************************************************* console.log
-
 const fs = require('fs/promises')
 const path = require("path");
 const crypto = require("crypto");
@@ -7,29 +5,6 @@ const crypto = require("crypto");
 // Адреса файлу з контактами
 const filename = "contacts.json";
 const contactsPath = path.resolve(__dirname, filename);
-
-// ************************ */
-const read = async (way) => {
-  try {
-    const fileData = await fs.readFile(way, "utf-8");
-    return JSON.parse(fileData);
-  } catch (err) {
-    console.log("Error read content >>", err);
-    return null
-  }
-};
-
-const write = async (way, content) => {
-  const contentJson = JSON.stringify(content);
-  try {
-    const fileData = await fs.writeFile(way, contentJson, "utf-8");
-    return content;
-  } catch (err) {
-    console.log("Error write content >>", err);
-    return null
-  }
-};
-// ******************* */
 
 // TODO: повертаю весь список контактів (запит за масивом)
 const listContacts = async () => {
@@ -45,32 +20,53 @@ const getById = async (contactId) => {
 }
 
 // TODO: додаю контакт
-const addContact = async (newData) => {
+// 1-створ. контакт, 2-дістаю всі контакти і додаю новий, 3-зберігаю оновлений масив контактів
+const addContact = async (formData) => {
   const newContact = {
     id: crypto.randomBytes(10).toString("hex"),
-    ...newData
+    ...formData
   };
 
   const contactList = await listContacts();
   contactList.push(newContact);
 
-  await fs.writeFile(contactsPath, JSON.stringify(contactList), "utf-8"); // fs.writeFile(contactsPath, JSON.stringify(contactList, null, 2)); // Що за null, 2)
+  await fs.writeFile(contactsPath, JSON.stringify(contactList, null, "\t"), "utf-8"); // fs.writeFile(contactsPath, JSON.stringify(contactList, null, 2)); // Що за null, 2)
   return newContact;
 }
 
+// TODO: змінюю контакт
+// 1-дістаю масив контакти і знаходжу індекс потрібного, 2-змінюю потрібний контакт 3-зберігаю оновлений масив контактів 4-повертаю оновлений контакт
 const updateContact = async (contactId, body) => {
+  // 1
+  const data = await listContacts();
+  const index = data.findIndex(item => item.id === contactId);
+  if(index === -1){
+    return null
+  }
+  // 2
+  data[index] = {id: contactId, ...body};
+  // 3
+  fs.writeFile(contactsPath, JSON.stringify(data, null, "\t"), "utf-8");
+  // 4
+  return data[index]
 
 }
 
-// TODO: видаляю контакт за id (запит за масивом)
+// TODO: видаляю контакт за id
+// 1-дістаю масив і створюю новий без вказаного id, 2-зберігаю новий масив, 3-повертаю новий масив
 const removeContact = async (contactId) => {
-  const data = await read(contactsPath);
-  if (!Array.isArray(data)) {
-    throw new Error("data is not an array");
+  // 1
+  const data = await listContacts();
+  const newData = data.filter( item => {
+    return item.id !== contactId
+  } );
+  if (data.length === newData.length){
+    return null
   }
-  const newData = data.filter((el) => el.id !== contactId);
-  const returnData = await write(contactsPath, newData);
-  return returnData;
+  // 2
+  await fs.writeFile(contactsPath, JSON.stringify(newData, null, "\t"), 'utf-8');
+  // 3
+  return newData
 }
 
 module.exports = {
