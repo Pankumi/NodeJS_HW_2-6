@@ -1,25 +1,23 @@
-const express = require('express')
+const express = require("express");
+const {
+  getAll,
+  getById,
+  add,
+  updateById,
+  deletedById,
+} = require("../../controllers/contacts");
 
-const router = express.Router()
+const router = express.Router();
 
-router.get('/', async (req, res, next) => {
-  res.json({ message: 'template message' })
-})
+router.get("/", getAll);
 
-router.get('/:contactId', async (req, res, next) => {
-  res.json({ message: 'template message' })
-})
+router.get("/:id", getById);
 
-router.post('/', async (req, res, next) => {
-  res.json({ message: 'template message' })
-})
+router.post("/", add);
 
-router.delete('/:contactId', async (req, res, next) => {
-  res.json({ message: 'template message' })
-})
+// put - запит змінює об'єкт (шляхом повного перезапису масиву)
+router.put("/:id", updateById);
 
-router.put('/:contactId', async (req, res, next) => {
-  res.json({ message: 'template message' })
-})
+router.delete("/:id", deletedById);
 
-module.exports = router
+module.exports = router;
